@@ -423,7 +423,7 @@ func (e *Endorser) preProcess(signedProp *pb.SignedProposal) (*validateResult, e
 func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedProposal) (*pb.ProposalResponse, error) {
 	// start time for computing elapsed time metric for successfully endorsed proposals
 	startTime := time.Now()
-	endorserLogger.Debugf("Got a proposal at %v", startTime)
+	endorserLogger.Debugf("Got a proposal at %v\n", startTime)
 	e.Metrics.ProposalsReceived.Add(1)
 
 	addr := util.ExtractRemoteAddress(ctx)
@@ -459,7 +459,7 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 
 	prop, hdrExt, chainID, txid := vr.prop, vr.hdrExt, vr.chainID, vr.txid
 
-	endorserLogger.Debugf("preProcessed proposal for txid:%v at %v", txid, time.Now())
+	endorserLogger.Debugf("preProcessed proposal for txid:%v at %v\n", txid, time.Now())
 
 	// obtaining once the tx simulator for this proposal. This will be nil
 	// for chainless proposals
@@ -525,7 +525,7 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 		}
 	}
 	sime := time.Now()
-	endorserLogger.Debugf("Simulated tx txid:%v in %v", txid, sime.Sub(sims))
+	endorserLogger.Debugf("Simulated tx txid:%v in %v\n", txid, sime.Sub(sims))
 
 	// 2 -- endorse and get a marshalled ProposalResponse message
 	endorses := time.Now()
@@ -560,7 +560,7 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 		}
 	}
 	endorsee := time.Now()
-	endorserLogger.Debugf("Endorsed tx txid:%v in %v", txid, endorsee.Sub(endorses))
+	endorserLogger.Debugf("Endorsed tx txid:%v in %v\n", txid, endorsee.Sub(endorses))
 
 	// Set the proposal response payload - it
 	// contains the "return value" from the

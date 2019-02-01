@@ -423,6 +423,7 @@ func (e *Endorser) preProcess(signedProp *pb.SignedProposal) (*validateResult, e
 func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedProposal) (*pb.ProposalResponse, error) {
 	// start time for computing elapsed time metric for successfully endorsed proposals
 	startTime := time.Now()
+	endorserLogger.Debugf("Got a proposal at %v", startTime)
 	e.Metrics.ProposalsReceived.Add(1)
 
 	addr := util.ExtractRemoteAddress(ctx)
@@ -448,6 +449,7 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 		endorserLogger.Debug("Exit: request from", addr)
 	}()
 
+
 	// 0 -- check and validate
 	vr, err := e.preProcess(signedProp)
 	if err != nil {
@@ -456,6 +458,8 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 	}
 
 	prop, hdrExt, chainID, txid := vr.prop, vr.hdrExt, vr.chainID, vr.txid
+
+	endorserLogger.Debugf("preProcessed proposal for txid:%v at %v", txid, time.Now())
 
 	// obtaining once the tx simulator for this proposal. This will be nil
 	// for chainless proposals
@@ -496,6 +500,7 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 	//       we're trying to emulate a submitting peer. On the other hand, we need
 	//       to validate the supplied action before endorsing it
 
+	sims := time.Now()
 	// 1 -- simulate
 	cd, res, simulationResult, ccevent, err := e.SimulateProposal(txParams, hdrExt.ChaincodeId)
 	if err != nil {
@@ -519,8 +524,11 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 			return pResp, nil
 		}
 	}
+	sime := time.Now()
+	endorserLogger.Debugf("Simulated tx txid:%v in %v", txid, sime.Sub(sims))
 
 	// 2 -- endorse and get a marshalled ProposalResponse message
+	endorses := time.Now()
 	var pResp *pb.ProposalResponse
 
 	// TODO till we implement global ESCC, CSCC for system chaincodes
@@ -551,6 +559,8 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 			return pResp, nil
 		}
 	}
+	endorsee := time.Now()
+	endorserLogger.Debugf("Endorsed tx txid:%v in %v", txid, endorsee.Sub(endorses))
 
 	// Set the proposal response payload - it
 	// contains the "return value" from the

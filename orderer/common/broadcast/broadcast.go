@@ -146,8 +146,9 @@ func (bh *Handler) ProcessMessage(msg *cb.Envelope, addr string) (resp *ab.Broad
 		tracker.Record(resp)
 	}()
 	tracker.BeginValidate()
-
+	vals := time.Now()
 	chdr, isConfig, processor, err := bh.SupportRegistrar.BroadcastChannelSupport(msg)
+	logger.Debugf("Started orderer validation for txid:%s at %s", chdr.TxId, time.Now())
 	if chdr != nil {
 		tracker.ChannelID = chdr.ChannelId
 		tracker.TxType = cb.HeaderType(chdr.Type).String()
@@ -165,9 +166,13 @@ func (bh *Handler) ProcessMessage(msg *cb.Envelope, addr string) (resp *ab.Broad
 			logger.Warningf("[channel: %s] Rejecting broadcast of normal message from %s because of error: %s", chdr.ChannelId, addr, err)
 			return &ab.BroadcastResponse{Status: ClassifyError(err), Info: err.Error()}
 		}
+		vale := time.Now()
+		logger.Debugf("Orderer validation time for txid:%s = %s", chdr.TxId, vale.Sub(vals))
+
 		tracker.EndValidate()
 
 		tracker.BeginEnqueue()
+		enqs := time.Now()
 		if err = processor.WaitReady(); err != nil {
 			logger.Warningf("[channel: %s] Rejecting broadcast of message from %s with SERVICE_UNAVAILABLE: rejected by Consenter: %s", chdr.ChannelId, addr, err)
 			return &ab.BroadcastResponse{Status: cb.Status_SERVICE_UNAVAILABLE, Info: err.Error()}
@@ -178,6 +183,9 @@ func (bh *Handler) ProcessMessage(msg *cb.Envelope, addr string) (resp *ab.Broad
 			logger.Warningf("[channel: %s] Rejecting broadcast of normal message from %s with SERVICE_UNAVAILABLE: rejected by Order: %s", chdr.ChannelId, addr, err)
 			return &ab.BroadcastResponse{Status: cb.Status_SERVICE_UNAVAILABLE, Info: err.Error()}
 		}
+		enqe := time.Now()
+		logger.Debugf("Orderer enque time for txid:%s = %s", chdr.TxId, enqe.Sub(enqs))
+
 	} else { // isConfig
 		logger.Debugf("[channel: %s] Broadcast is processing config update message from %s", chdr.ChannelId, addr)
 

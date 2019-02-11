@@ -423,7 +423,9 @@ func (e *Endorser) preProcess(signedProp *pb.SignedProposal) (*validateResult, e
 func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedProposal) (*pb.ProposalResponse, error) {
 	// start time for computing elapsed time metric for successfully endorsed proposals
 	startTime := time.Now()
-	endorserLogger.Debugf("Got a proposal at %v\n", startTime)
+	s1 := rand.NewSource(startTime.UnixNano())
+	r1 := rand.New(s1)
+	endorserLogger.Debugf("ASH: Got endorser proposal from client, RID:%d at %v\n", startTime, r1)
 	e.Metrics.ProposalsReceived.Add(1)
 
 	addr := util.ExtractRemoteAddress(ctx)
@@ -459,7 +461,10 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 
 	prop, hdrExt, chainID, txid := vr.prop, vr.hdrExt, vr.chainID, vr.txid
 
-	endorserLogger.Debugf("preProcessed proposal for txid:%v at %v\n", txid, time.Now())
+	endorserLogger.Debugf("preProcessed proposal for txid:%v and RID:%d at %v\n", txid, r1, time.Now())
+	defer func() {
+		endorserLogger.Debugf("ASH: Exited endorser peer txid:%v and RID:%d at %v\n", txid, r1, time.Now())
+		}()
 
 	// obtaining once the tx simulator for this proposal. This will be nil
 	// for chainless proposals

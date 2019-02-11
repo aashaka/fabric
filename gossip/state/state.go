@@ -534,6 +534,7 @@ func (s *GossipStateProviderImpl) deliverPayloads() {
 			logger.Debugf("[%s] Ready to transfer payloads (blocks) to the ledger, next block number is = [%d]", s.chainID, s.payloads.Next())
 			// Collect all subsequent payloads
 			for payload := s.payloads.Pop(); payload != nil; payload = s.payloads.Pop() {
+				logger.Debugf("[%s] ASH: Started block processing for block %d at time %v", s.chainID, payload.SeqNum, time.Now())
 				rawBlock := &common.Block{}
 				if err := pb.Unmarshal(payload.Data, rawBlock); err != nil {
 					logger.Errorf("Error getting block with seqNum = %d due to (%+v)...dropping block", payload.SeqNum, errors.WithStack(err))
@@ -562,6 +563,7 @@ func (s *GossipStateProviderImpl) deliverPayloads() {
 					}
 					logger.Panicf("Cannot commit block to the ledger due to %+v", errors.WithStack(err))
 				}
+				logger.Debugf("[%s] ASH: Finished block processing for block %d at time %v", s.chainID, payload.SeqNum, time.Now())
 			}
 		case <-s.stopCh:
 			s.stopCh <- struct{}{}

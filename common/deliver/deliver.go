@@ -324,6 +324,8 @@ func (h *Handler) deliverBlocks(ctx context.Context, srv *Server, envelope *cb.E
 		}
 
 		h.Metrics.BlocksSent.With(labels...).Add(1)
+		logger.Debugf("[channel: %s] ASH: Orderer sent block response to peer. Delivered block number %d for (%p) for %s at time %v", number-1, chdr.ChannelId, seekInfo, addr, time.Now())
+
 
 		if stopNum == block.Header.Number {
 			break

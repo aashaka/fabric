@@ -148,7 +148,10 @@ func (bh *Handler) ProcessMessage(msg *cb.Envelope, addr string) (resp *ab.Broad
 	tracker.BeginValidate()
 	vals := time.Now()
 	chdr, isConfig, processor, err := bh.SupportRegistrar.BroadcastChannelSupport(msg)
-	logger.Debugf("Started orderer validation for txid:%s at %s", chdr.TxId, time.Now())
+	logger.Debugf("ASH: Started orderer validation for txid:%s at %s", chdr.TxId, time.Now())
+	defer func() {
+		logger.Debugf("ASH: Finished orderer validation for txid:%s at %s", chdr.TxId, time.Now())
+	}
 	if chdr != nil {
 		tracker.ChannelID = chdr.ChannelId
 		tracker.TxType = cb.HeaderType(chdr.Type).String()

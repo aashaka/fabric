@@ -459,9 +459,9 @@ func (e *Endorser) ProcessProposal(ctx context.Context, signedProp *pb.SignedPro
 
 	prop, hdrExt, chainID, txid := vr.prop, vr.hdrExt, vr.chainID, vr.txid
 
-	endorserLogger.Debugf("preProcessed proposal for txid:%v and RID:%d at %v\n", txid, startTime, time.Now())
+	endorserLogger.Debugf("preProcessed proposal for txid:%v and RID:%v at %v\n", txid, startTime, time.Now())
 	defer func() {
-		endorserLogger.Debugf("ASH: Exited endorser peer txid:%v and RID:%d at %v\n", txid, startTime, time.Now())
+		endorserLogger.Debugf("ASH: Exited endorser peer txid:%v and RID:%v at %v\n", txid, startTime, time.Now())
 		}()
 
 	// obtaining once the tx simulator for this proposal. This will be nil
